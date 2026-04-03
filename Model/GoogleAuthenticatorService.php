@@ -27,11 +27,7 @@ class GoogleAuthenticatorService extends \Neyamtux\Authenticator\Lib\PHPGangsta\
         if (true === is_string($title)) {
             $text = sprintf('%s&issuer=%s', $text, $title);
         }
-        $qrCode = new QrCode($text);
-        $qrCode->setSize($size);
-        $qrCode->setMargin(0);
-        $qrCode->setEncoding(new Encoding('UTF-8'));
-        $qrCode->setSize($size);
+        $qrCode = new QrCode($text, new Encoding('UTF-8'), \Endroid\QrCode\ErrorCorrectionLevel::Low, $size, 0);
 
         $writer = new PngWriter();
         return $writer->write($qrCode)->getString();
