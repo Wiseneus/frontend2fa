@@ -66,6 +66,20 @@ class SetupTfa extends \Magento\Framework\App\Action\Action
      */
     public function execute()
     {
+        // This endpoint is for initial enrollment only. A customer's existing
+        // authenticator must never be replaceable through a form POST.
+        $customerId = (int) $this->_customerSession->getCustomerId();
+        if (!$customerId) {
+            return $this->_redirect('customer/account/login');
+        }
+        $existingSecret = $this->secretFactory->create()->load($customerId, 'customer_id');
+        if ($existingSecret->getId()) {
+            $this->messageManager->addErrorMessage(
+                __('Two-Factor Authentication is already configured. Contact support to reset it.')
+            );
+            return $this->_redirect('customer/account');
+        }
+
         $post = $this->getRequest()->getPostValue();
         if (!$post) {
             $this->_view->loadLayout();
@@ -73,7 +87,8 @@ class SetupTfa extends \Magento\Framework\App\Action\Action
             $this->_view->renderLayout();
         } else {
             $authenticator = $this->_layoutFactory->create()->createBlock('Elgentos\Frontend2FA\Block\Authenticator');
-            if ($authenticator->authenticateQRCode($post['secret'], $post['code'])) {
+            if (!empty($post['secret']) && !empty($post['code'])
+                && $authenticator->authenticateQRCode($post['secret'], $post['code'])) {
                 $this->messageManager->addSuccessMessage(__('2FA successfully set up'));
                 $this->secretFactory->create()->setData([
                     'customer_id' => $this->_customerSession->getCustomerId(),

@@ -24,6 +24,15 @@ class LoginPostPlugin
     }
 
     /**
+     * Never carry a previous customer's 2FA success state into a fresh
+     * authentication attempt, including when switching accounts.
+     */
+    public function beforeExecute(LoginPost $subject): void
+    {
+        $this->customerSession->set2faSuccessful(false);
+    }
+
+    /**
      * @param LoginPost $subject
      * @param AbstractResult $result
      * @return AbstractResult

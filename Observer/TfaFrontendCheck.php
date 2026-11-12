@@ -6,6 +6,8 @@ use Elgentos\Frontend2FA\Api\ConfigInterface;
 use Elgentos\Frontend2FA\Api\TfaCheckInterface;
 use Elgentos\Frontend2FA\Model\SecretFactory;
 use Magento\Customer\Model\Session;
+use Magento\Framework\App\ActionFlag;
+use Magento\Framework\App\ActionInterface;
 use Magento\Framework\App\Response\Http;
 use Magento\Framework\App\Response\RedirectInterface;
 use Magento\Framework\Event\ObserverInterface;
@@ -56,7 +58,8 @@ class TfaFrontendCheck implements ObserverInterface
         \Magento\Framework\Message\ManagerInterface $messageManager,
         private readonly RequestInterface $request,
         private readonly TfaCheckInterface $tfaCheck,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly ActionFlag $actionFlag
     ) {
         $this->url = $url;
         $this->redirect = $redirect;
@@ -97,11 +100,13 @@ class TfaFrontendCheck implements ObserverInterface
         if ($this->tfaCheck->is2faConfiguredForCustomer($customer)) {
             // Redirect to 2FA authentication page
             $redirectionUrl = $this->url->getUrl(TfaCheckInterface::FRONTEND_2_FA_ACCOUNT_AUTHENTICATE_PATH);
+            $this->actionFlag->set('', ActionInterface::FLAG_NO_DISPATCH, true);
             $observer->getControllerAction()->getResponse()->setRedirect($redirectionUrl);
         } elseif ($this->tfaCheck->isCustomerInForced2faGroup($customer)) {
             // Redirect to 2FA setup page
             $this->messageManager->addNoticeMessage(__('You need to set up Two Factor Authentication before continuing.'));
             $redirectionUrl = $this->url->getUrl(TfaCheckInterface::FRONTEND_2_FA_ACCOUNT_SETUP_PATH);
+            $this->actionFlag->set('', ActionInterface::FLAG_NO_DISPATCH, true);
             $observer->getControllerAction()->getResponse()->setRedirect($redirectionUrl);
         }
 
