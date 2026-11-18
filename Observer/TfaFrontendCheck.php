@@ -101,13 +101,13 @@ class TfaFrontendCheck implements ObserverInterface
             // Redirect to 2FA authentication page
             $redirectionUrl = $this->url->getUrl(TfaCheckInterface::FRONTEND_2_FA_ACCOUNT_AUTHENTICATE_PATH);
             $this->actionFlag->set('', ActionInterface::FLAG_NO_DISPATCH, true);
-            $observer->getControllerAction()->getResponse()->setRedirect($redirectionUrl);
+            $this->redirect->setRedirect($redirectionUrl);
         } elseif ($this->tfaCheck->isCustomerInForced2faGroup($customer)) {
             // Redirect to 2FA setup page
             $this->messageManager->addNoticeMessage(__('You need to set up Two Factor Authentication before continuing.'));
             $redirectionUrl = $this->url->getUrl(TfaCheckInterface::FRONTEND_2_FA_ACCOUNT_SETUP_PATH);
             $this->actionFlag->set('', ActionInterface::FLAG_NO_DISPATCH, true);
-            $observer->getControllerAction()->getResponse()->setRedirect($redirectionUrl);
+            $this->redirect->setRedirect($redirectionUrl);
         }
 
         return $this;
